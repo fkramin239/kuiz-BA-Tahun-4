@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wira Mufradat - Pengembaraan Bahasa Arab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Amiri:wght@700&display=swap');
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      background-color: #0f172a;
+    }
+
+    .font-arabic {
+      font-family: 'Amiri', serif;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.6)); }
+      50% { filter: drop-shadow(0 0 25px rgba(245, 158, 11, 0.9)); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-14px); }
+      40%, 80% { transform: translateX(14px); }
+    }
+
+    @keyframes attack-anim {
+      0% { transform: translateX(0) scale(1); }
+      50% { transform: translateX(80px) scale(1.25) rotate(12deg); }
+      100% { transform: translateX(0) scale(1); }
+    }
+
+    @keyframes hurt-anim {
+      0% { transform: translateX(0); filter: brightness(1); }
+      25% { transform: translateX(-20px); filter: brightness(2) drop-shadow(0 0 15px red); }
+      50% { transform: translateX(20px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); filter: brightness(1); }
+    }
+
+    @keyframes float-up-text {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-70px) scale(1.4); }
+    }
+
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-shake { animation: shake 0.4s ease-in-out; }
+    .animate-attack { animation: attack-anim 0.5s ease-in-out; }
+    .animate-hurt { animation: hurt-anim 0.5s ease-in-out; }
+    .animate-glow { animation: pulse-glow 2s infinite; }
+    .floating-num { animation: float-up-text 1.2s forwards ease-out; }
+
+    .rpg-card {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(12px);
+      border: 4px solid #f59e0b;
+      box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .option-btn {
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .option-btn:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: #f59e0b;
+      box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
+    }
+    .option-btn:active {
+      transform: translateY(2px) scale(0.98);
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Print Stylesheet for Official Teacher Report */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printable-report, #printable-report * {
+        visibility: visible;
+      }
+      #printable-report {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: #000;
+        background: #fff !important;
+        padding: 20px;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex items-center justify-center p-2 md:p-4 overflow-x-hidden bg-slate-950">
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <div id="app-root" class="w-full max-w-4xl bg-gradient-to-b from-indigo-950 via-slate-900 to-amber-950 rounded-3xl border-8 border-amber-500 shadow-2xl overflow-hidden relative min-h-[720px] flex flex-col justify-between">
+    
+    <!-- HEADER BAR WITH TEACHER DASHBOARD ACCESS -->
+    <div class="bg-slate-950/90 backdrop-blur-md p-3 md:p-4 border-b-4 border-amber-500 text-white flex justify-between items-center z-10 shadow-lg">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl md:text-3xl">⚔️</span>
+        <div>
+          <h1 class="text-base md:text-xl font-black text-amber-400 tracking-wide uppercase leading-none">Wira Mufradat</h1>
+          <span class="text-[10px] md:text-xs text-amber-200/80 font-bold">RPG Bahasa Arab Sekolah Rendah</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleSound()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 border border-amber-500/40 rounded-xl flex items-center justify-center text-amber-400 text-lg transition shadow">
+          <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+        </button>
+        <button onclick="openTeacherAuthModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3.5 py-2 rounded-xl border border-indigo-400 text-xs md:text-sm flex items-center gap-1.5 shadow active:scale-95 transition">
+          <i class="fa-solid fa-user-tie"></i> Panel Guru
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: REGISTRATION & CHARACTER SELECT FORM -->
+    <div id="view-registration" class="p-4 md:p-8 flex-1 flex flex-col justify-center items-center">
+      <div class="rpg-card max-w-md w-full p-6 md:p-8 rounded-3xl text-center space-y-5 my-auto">
+        <div>
+          <div class="inline-block p-4 bg-amber-500/20 rounded-full border-2 border-amber-400 mb-2">
+            <span class="text-5xl">🛡️</span>
+          </div>
+          <h2 class="text-2xl md:text-3xl font-black text-amber-400 uppercase">Pendaftaran Wira</h2>
+          <p class="text-xs md:text-sm text-slate-300">Sila isi maklumat peribadi anda sebelum memasuki medan pertempuran mufradat!</p>
+        </div>
+
+        <form id="registration-form" onsubmit="submitRegistration(event)" class="space-y-4 text-left">
+          <div>
+            <label class="block text-xs font-bold text-amber-300 uppercase mb-1">Nama Penuh Murid <span class="text-red-400">*</span></label>
+            <input type="text" id="reg-name" required placeholder="Contoh: Muhammad Ali Bin Ahmad" 
+              class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-500 text-white rounded-xl px-4 py-2.5 text-sm outline-none transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-amber-300 uppercase mb-1">Kelas <span class="text-red-400">*</span></label>
+            <input type="text" id="reg-class" required placeholder="Contoh: 4 UMP / 5 UPM / 6 UTP" 
+              class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-500 text-white rounded-xl px-4 py-2.5 text-sm outline-none transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-amber-300 uppercase mb-1">Pilih Watak Pahlawan <span class="text-red-400">*</span></label>
+            <div class="grid grid-cols-2 gap-3" id="hero-select-container">
+              <!-- Dynamically built -->
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black py-3 rounded-2xl border-2 border-white text-lg shadow-xl active:scale-95 transition mt-2 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-gamepad"></i> Mula Bermain
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- VIEW 2: GAMEPLAY SCREEN (Initially Hidden) -->
+    <div id="view-gameplay" class="hidden flex-1 flex flex-col justify-between">
+      
+      <!-- Top HUD Bar -->
+      <div class="bg-slate-950/80 p-3 md:p-4 border-b-2 border-amber-500/40 text-white flex flex-wrap justify-between items-center gap-2 z-10 shadow">
+        <!-- Player Profile & Stats -->
+        <div class="flex items-center gap-3">
+          <div class="relative cursor-pointer" onclick="openHeroModal()" title="Tukar Watak">
+            <div id="avatar-icon-hud" class="w-12 h-12 md:w-14 md:h-14 bg-amber-500 border-2 border-white rounded-2xl flex items-center justify-center text-3xl shadow-lg hover:scale-105 transition">
+              🧙‍♂️
+            </div>
+            <span id="level-badge" class="absolute -bottom-2 -right-2 bg-gradient-to-r from-red-500 to-amber-500 text-white font-black text-xs px-2 py-0.5 rounded-full border border-white shadow">
+              LVL 1
+            </span>
+          </div>
+
+          <div class="flex flex-col gap-1 w-32 md:w-44">
+            <div class="flex justify-between items-center text-xs font-bold px-1">
+              <span class="text-red-400 flex items-center gap-1"><i class="fa-solid fa-heart"></i> HP</span>
+              <span id="hp-text" class="text-slate-200">100/100</span>
+            </div>
+            <div class="w-full bg-slate-800 h-3.5 rounded-full overflow-hidden border border-slate-700 p-0.5 shadow-inner">
+              <div id="hp-bar" class="bg-gradient-to-r from-red-600 to-rose-400 h-full rounded-full transition-all duration-500 w-full"></div>
+            </div>
+
+            <div class="flex justify-between items-center text-xs font-bold px-1">
+              <span class="text-amber-400 flex items-center gap-1"><i class="fa-solid fa-star"></i> XP</span>
+              <span id="xp-text" class="text-slate-200">0/100</span>
+            </div>
+            <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700 p-0.5 shadow-inner">
+              <div id="xp-bar" class="bg-gradient-to-r from-amber-400 to-yellow-300 h-full rounded-full transition-all duration-500 w-0"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Info Badge & Coins -->
+        <div class="flex items-center gap-2">
+          <div class="text-right hidden sm:block">
+            <div id="hud-player-name" class="font-bold text-xs text-amber-300 truncate max-w-[120px]">Nama Murid</div>
+            <div id="hud-player-class" class="text-[10px] text-slate-400 font-semibold">Kelas</div>
+          </div>
+          <div class="bg-amber-500/20 border border-amber-400/40 px-3 py-1.5 rounded-xl text-amber-300 font-bold text-xs md:text-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-coins text-yellow-400"></i> <span id="coin-count">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Battle Stage -->
+      <div class="relative flex-1 flex justify-between items-end px-6 md:px-16 pb-4 pt-4 z-0 overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-transparent to-black/60">
+        <div id="damage-float-zone" class="absolute inset-0 pointer-events-none z-30"></div>
+
+        <!-- Player Character Sprite -->
+        <div class="flex flex-col items-center relative">
+          <div id="player-status-bubble" class="hidden mb-2 bg-amber-400 text-slate-950 font-black text-xs px-3 py-1.5 rounded-2xl border-2 border-white shadow-xl animate-bounce">
+            Serangan Suci! ⚔️
+          </div>
+          <div id="player-character" class="w-24 h-24 md:w-32 md:h-32 bg-amber-500/20 rounded-3xl border-4 border-amber-400 flex items-center justify-center text-6xl md:text-7xl shadow-2xl animate-float transition-all duration-300">
+            🧙‍♂️
+          </div>
+          <div class="w-24 md:w-32 h-4 bg-black/40 rounded-full blur-sm mt-1"></div>
+          <span id="player-hero-name" class="font-bold text-xs bg-slate-950/80 text-amber-300 px-3 py-1 rounded-full border border-amber-500/40 mt-1 shadow">
+            Pahlawan
+          </span>
+        </div>
+
+        <!-- VS Emblem -->
+        <div class="flex flex-col items-center justify-center mb-6">
+          <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-tr from-amber-600 to-red-600 border-2 border-white flex items-center justify-center text-white font-black text-sm md:text-lg shadow-2xl animate-glow">
+            VS
+          </div>
+        </div>
+
+        <!-- Enemy Sprite -->
+        <div class="flex flex-col items-center relative">
+          <div id="enemy-status-bubble" class="hidden mb-2 bg-red-600 text-white font-black text-xs px-3 py-1.5 rounded-2xl border-2 border-white shadow-xl animate-bounce">
+            Rasakan Ini! 💥
+          </div>
+          <div id="enemy-character" class="w-24 h-24 md:w-32 md:h-32 bg-red-500/20 rounded-3xl border-4 border-red-500 flex items-center justify-center text-6xl md:text-7xl shadow-2xl animate-float transition-all duration-300">
+            👾
+          </div>
+          <div class="w-24 md:w-32 h-4 bg-black/40 rounded-full blur-sm mt-1"></div>
+          <span id="enemy-name" class="font-bold text-xs bg-slate-950/80 text-red-400 px-3 py-1 rounded-full border border-red-500/40 mt-1 shadow">
+            Raksa Mufradat
+          </span>
+        </div>
+      </div>
+
+      <!-- Quiz RPG Card -->
+      <div class="px-4 md:px-8 -mt-2 z-10">
+        <div class="rpg-card rounded-3xl p-4 md:p-5 text-center border-4 border-amber-500 relative">
+          <div class="flex items-center justify-between border-b border-amber-500/30 pb-2 mb-2">
+            <span id="category-badge" class="bg-indigo-900/80 text-indigo-200 border border-indigo-400/50 px-3 py-1 rounded-xl text-xs font-bold">
+              <i class="fa-solid fa-book"></i> <span id="category-name">Bulan Masihi</span>
+            </span>
+            <span id="question-direction" class="bg-amber-500/20 text-amber-300 border border-amber-400/40 px-3 py-1 rounded-xl text-xs font-bold">
+              Arab ➔ Melayu
+            </span>
+          </div>
+
+          <p id="prompt-instruction" class="text-xs md:text-sm font-bold text-amber-400 uppercase tracking-wider mb-1">
+            Apakah maksud bagi perkataan ini?
+          </p>
+
+          <div class="flex items-center justify-center gap-3 my-2 min-h-[56px]">
+            <span id="question-display" class="font-arabic text-3xl md:text-5xl font-black text-amber-300 drop-shadow-lg leading-relaxed">
+              يَنَايِرُ
+            </span>
+            <button id="tts-btn" onclick="speakCurrentWord()" class="w-10 h-10 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 rounded-2xl flex items-center justify-center text-lg shadow-lg transition" title="Dengar Sebutan Bahasa Arab">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Options Grid -->
+      <div class="p-4 md:p-6 z-10">
+        <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Dynamic options -->
+        </div>
+      </div>
+
+      <!-- Footer Controls -->
+      <div class="bg-slate-950 border-t-4 border-amber-500 p-3 px-6 flex justify-between items-center text-white text-xs font-bold">
+        <div class="flex items-center gap-2">
+          <span class="text-amber-400"><i class="fa-solid fa-fire"></i> Combo:</span>
+          <span id="streak-count" class="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-xl border border-amber-500/40">0x</span>
+        </div>
+        <button onclick="openCategoryModal()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white px-4 py-2 rounded-xl border border-indigo-400 transition flex items-center gap-2 shadow">
+          <i class="fa-solid fa-map"></i> Pilih Kategori
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TEACHER PASSWORD AUTH MODAL -->
+  <div id="teacher-auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-amber-500 rounded-3xl p-6 max-w-sm w-full text-white shadow-2xl">
+      <h3 class="text-xl font-black text-amber-400 text-center mb-2 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-lock"></i> Pengesahan Guru
+      </h3>
+      <p class="text-xs text-slate-300 text-center mb-4">Sila masukkan kata laluan untuk mengakses rekod murid (Default: <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-300">admin</code> / <code class="bg-slate-800 px-1 py-0.5 rounded text-amber-300">guru</code>).</p>
+      
+      <form onsubmit="verifyTeacherPass(event)" class="space-y-4">
+        <input type="password" id="teacher-pass-input" placeholder="Kata Laluan Guru" required
+          class="w-full bg-slate-950 border-2 border-slate-700 focus:border-amber-500 text-white rounded-xl px-4 py-2 text-sm outline-none text-center">
+        <p id="pass-error-msg" class="text-xs text-red-400 hidden text-center font-bold">Kata laluan tidak sah!</p>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeTeacherAuthModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-bold text-sm">Batal</button>
+          <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-xl font-bold text-sm">Masuk</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TEACHER DASHBOARD MODAL -->
+  <div id="teacher-dashboard-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 md:p-6 z-50 hidden overflow-y-auto">
+    <div class="bg-slate-900 border-4 border-amber-500 rounded-3xl p-4 md:p-6 max-w-4xl w-full text-white shadow-2xl my-auto">
+      
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl text-amber-400"><i class="fa-solid fa-chalkboard-user"></i></span>
+          <div>
+            <h2 class="text-lg md:text-2xl font-black text-amber-400 uppercase">Panel Guru & Rekod Murid</h2>
+            <p class="text-xs text-slate-300">Pantau pencapaian dan markah permainan murid</p>
+          </div>
+        </div>
+        <button onclick="closeTeacherDashboard()" class="text-slate-400 hover:text-white text-2xl px-2">&times;</button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 justify-between items-center mb-4">
+        <div class="text-xs text-amber-300 font-bold">
+          Jumlah Rekod: <span id="record-count-badge" class="bg-amber-500/20 px-2 py-0.5 rounded border border-amber-400">0</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="printStudentRecords()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-print"></i> Cetak / PDF
+          </button>
+          <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-file-excel"></i> Export CSV
+          </button>
+          <button onclick="clearAllRecords()" class="bg-red-600/80 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-trash"></i> Padam Rekod
+          </button>
+        </div>
+      </div>
+
+      <!-- Records Table Container -->
+      <div class="overflow-x-auto max-h-[380px] overflow-y-auto border border-slate-700 rounded-2xl bg-slate-950/60 p-2">
+        <table class="w-full text-left text-xs md:text-sm">
+          <thead class="bg-slate-800 text-amber-300 uppercase font-bold sticky top-0 border-b border-slate-700">
+            <tr>
+              <th class="p-3">#</th>
+              <th class="p-3">Nama Murid</th>
+              <th class="p-3">Kelas</th>
+              <th class="p-3">Masa & Tarikh</th>
+              <th class="p-3">Level & XP</th>
+              <th class="p-3 text-center">Betul / Salah</th>
+              <th class="p-3 text-right">Peratus (%)</th>
+            </tr>
+          </thead>
+          <tbody id="student-records-tbody" class="divide-y divide-slate-800 text-slate-200">
+            <!-- Records injected dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-800 flex justify-end">
+        <button onclick="closeTeacherDashboard()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-2 rounded-xl text-xs md:text-sm">
+          Tutup Panel
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PRINTABLE REPORT TEMPLATE (For Print / PDF Output) -->
+  <div id="printable-report" class="hidden">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h1 style="font-size: 22px; font-weight: bold; margin: 0;">REKOD PENCAPAIAN MURID</h1>
+      <h2 style="font-size: 16px; margin: 5px 0 0 0;">PERMAINAN KUIZ INTERAKTIF RPG BAHASA ARAB</h2>
+      <p style="font-size: 12px; color: #555; margin-top: 5px;" id="print-date-header"></p>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th style="border: 1px solid #ddd; padding: 8px;">No</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Nama Murid</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Kelas</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Tarikh & Masa</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Level Akhir</th>
+          <th style="border: 1px solid #ddd; padding: 8px;">Soalan Betul / Salah</th>
+          <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Peratus (%)</th>
+        </tr>
+      </thead>
+      <tbody id="printable-records-tbody">
+        <!-- Records injected dynamically -->
+      </tbody>
+    </table>
+
+    <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px;">
+      <div>
+        <p>Disediakan Oleh:</p>
+        <br><br>
+        <p>___________________________<br>(Guru Bahasa Arab)</p>
+      </div>
+      <div>
+        <p>Disahkan Oleh:</p>
+        <br><br>
+        <p>___________________________<br>(Pentadbir / GPK)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO SELECT MODAL -->
+  <div id="hero-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-amber-500 rounded-3xl p-6 max-w-md w-full text-white shadow-2xl">
+      <h3 class="text-xl font-black text-amber-400 text-center mb-4 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-user-ninja"></i> Tukar Watak Pahlawan
+      </h3>
+      <div class="grid grid-cols-2 gap-3" id="hero-list">
+        <!-- Heroes injected here -->
+      </div>
+      <button onclick="closeHeroModal()" class="w-full mt-5 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-bold transition">
+        Tutup
+      </button>
+    </div>
+  </div>
+
+  <!-- CATEGORY MODAL -->
+  <div id="category-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-amber-500 rounded-3xl p-6 max-w-md w-full text-white shadow-2xl">
+      <h3 class="text-xl font-black text-amber-400 text-center mb-4 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-book-bookmark"></i> Pilih Kategori Soalan
+      </h3>
+      <div class="space-y-3" id="category-list">
+        <!-- Categories injected here -->
+      </div>
+      <button onclick="closeCategoryModal()" class="w-full mt-5 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl font-bold transition">
+        Batal
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULT / GAME OVER MODAL -->
+  <div id="result-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-amber-500 rounded-3xl p-6 md:p-8 max-w-md w-full text-center text-white shadow-2xl relative overflow-hidden">
+      <div class="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3 text-5xl text-amber-400 border-2 border-amber-400 shadow-inner">
+        🏆
+      </div>
+      <h2 class="text-2xl font-black text-amber-400 mb-1 uppercase">TAMAT PENGEMBARAAN!</h2>
+      <p class="text-slate-300 text-xs mb-4">Rekod pencapaian anda telah disimpan secara automatik dalam sistem Guru.</p>
+
+      <div class="bg-slate-800/90 rounded-2xl p-4 border border-slate-700 mb-5 space-y-2 text-xs md:text-sm">
+        <div class="flex justify-between">
+          <span class="text-slate-400">Nama Murid:</span>
+          <span id="res-student-name" class="font-bold text-amber-300">--</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Peringkat Akhir:</span>
+          <span id="res-level" class="font-bold text-amber-300">Level 1</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Jumlah XP:</span>
+          <span id="res-xp" class="font-bold text-yellow-400">0 XP</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Keputusan Jawapan:</span>
+          <span id="res-score" class="font-bold text-emerald-400">0 / 0</span>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="restartGame()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black py-3 rounded-2xl border-2 border-white text-base shadow-lg active:scale-95 transition">
+          <i class="fa-solid fa-rotate-right"></i> Main Semula
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    // Complete vocabulary extracted from provided images
+    const vocabularyData = [
+      {
+        id: 'months',
+        name: 'Bulan-bulan Masihi (الأَشْهُرُ المِلاَدِيَّةُ)',
+        items: [
+          { ar: 'يَنَايِرُ', ms: 'Januari' },
+          { ar: 'فِبْرَايِرُ', ms: 'Februari' },
+          { ar: 'مَارِسُ', ms: 'Mac' },
+          { ar: 'أَبْرِيلُ', ms: 'April' },
+          { ar: 'مَايُو', ms: 'Mei' },
+          { ar: 'يُونِيُو', ms: 'Jun' },
+          { ar: 'يُولِيُو', ms: 'Julai' },
+          { ar: 'أَغُسْطُسُ', ms: 'Ogos' },
+          { ar: 'سِبْتَمْبِرُ', ms: 'September' },
+          { ar: 'أُكْتُوبَرُ', ms: 'Oktober' },
+          { ar: 'نُوفَمْبِرُ', ms: 'November' },
+          { ar: 'دِيسَمْبِرُ', ms: 'Disember' }
+        ]
+      },
+      {
+        id: 'events',
+        name: 'Acara Sekolah (المُنَاسَبَاتُ)',
+        items: [
+          { ar: 'يَوْمُ الْمُعَلِّمِينَ', ms: 'Hari Guru' },
+          { ar: 'يَوْمُ الْمِيلاَدِ', ms: 'Hari Lahir' },
+          { ar: 'الْيَوْمُ الرِّيَاضِيُّ', ms: 'Hari Sukan' },
+          { ar: 'يَوْمُ اللُّغَةِ الْعَرَبِيَّةِ', ms: 'Hari Bahasa Arab' },
+          { ar: 'حَفْلُ التَّكْرِيمِ', ms: 'Majlis Anugerah Kecemerlangan' }
+        ]
+      },
+      {
+        id: 'school_members',
+        name: 'Warga Sekolah (مَن فِي المَدْرَسَةِ)',
+        items: [
+          { ar: 'مُدِيرٌ / مُدِيرَةٌ', ms: 'Guru Besar' },
+          { ar: 'مُسَاعِدُ الْمُدِيرِ / مُسَاعِدَةُ الْمُدِيرِ', ms: 'Guru Penolong Kanan' },
+          { ar: 'عَرِيفٌ / عَرِيفَةٌ', ms: 'Pengawas' },
+          { ar: 'أَمِينُ الْمَكْتَبَةِ / أَمِينَةُ الْمَكْتَبَةِ', ms: 'Pengawas Perpustakaan' },
+          { ar: 'رَئِيسُ الْفَصْلِ / رَئِيسَةُ الْفَصْلِ', ms: 'Ketua Kelas' },
+          { ar: 'كَاتِبٌ / كَاتِبَةٌ', ms: 'Kerani' },
+          { ar: 'مُعَلِّمٌ / مُعَلِّمَةٌ', ms: 'Guru' },
+          { ar: 'تِلْمِيذٌ / تِلْمِيذَةٌ', ms: 'Murid' },
+          { ar: 'حَارِسٌ / حَارِسَةٌ', ms: 'Pengawal' },
+          { ar: 'نَشِيطٌ / نَشِيطَةٌ', ms: 'Aktif' }
+        ]
+      }
+    ];
+
+    const heroes = [
+      { id: 'wizard_male', name: 'Pahlawan Lelaki', icon: '🧙‍♂️' },
+      { id: 'wizard_female', name: 'Pahlawan Perempuan', icon: '🧕' },
+      { id: 'knight_male', name: 'Kesatria Lelaki', icon: '⚔️' },
+      { id: 'knight_female', name: 'Kesatria Perempuan', icon: '🛡️' }
+    ];
+
+    // Student & Game state
+    let currentStudent = {
+      name: '',
+      studentClass: '',
+      heroIdx: 0
+    };
+
+    let player = {
+      hp: 100,
+      maxHp: 100,
+      xp: 0,
+      nextXp: 100,
+      level: 1,
+      coins: 0,
+      streak: 0,
+      totalCorrect: 0,
+      totalQuestions: 0
+    };
+
+    let soundEnabled = true;
+    let currentCategoryIdx = 0;
+    let currentQuestion = null;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        setTimeout(() => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        }, delay * 1000);
+      } catch (e) {
+        console.log("Audio synth not ready");
+      }
+    }
+
+    function soundClick() { playTone(450, 'sine', 0.08); }
+    function soundCorrect() {
+      playTone(523.25, 'triangle', 0.12, 0); 
+      playTone(659.25, 'triangle', 0.12, 0.08); 
+      playTone(783.99, 'triangle', 0.25, 0.16); 
+    }
+    function soundWrong() {
+      playTone(220, 'sawtooth', 0.15, 0);
+      playTone(160, 'sawtooth', 0.25, 0.1);
+    }
+    function soundLevelUp() {
+      playTone(440, 'sine', 0.1, 0);
+      playTone(554.37, 'sine', 0.1, 0.08);
+      playTone(659.25, 'sine', 0.1, 0.16);
+      playTone(880, 'sine', 0.35, 0.24);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      if (soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+        soundClick();
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark';
+      }
+    }
+
+    function speakCurrentWord() {
+      soundClick();
+      if (!currentQuestion || !currentQuestion.arabicText) return;
+      
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(currentQuestion.arabicText);
+        utterance.lang = 'ar-SA';
+        utterance.rate = 0.8;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function renderHeroSelectionForm() {
+      const container = document.getElementById('hero-select-container');
+      container.innerHTML = '';
+      heroes.forEach((h, idx) => {
+        const btn = document.createElement('div');
+        btn.onclick = () => selectRegHero(idx);
+        btn.id = `hero-choice-${idx}`;
+        btn.className = `p-3 rounded-2xl border-2 cursor-pointer flex flex-col items-center justify-center transition ${
+          idx === currentStudent.heroIdx ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-400'
+        }`;
+        btn.innerHTML = `<span class="text-3xl">${h.icon}</span><span class="text-xs font-bold mt-1">${h.name}</span>`;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectRegHero(idx) {
+      soundClick();
+      currentStudent.heroIdx = idx;
+      renderHeroSelectionForm();
+    }
+
+    function submitRegistration(e) {
+      e.preventDefault();
+      soundClick();
+
+      const nameVal = document.getElementById('reg-name').value.trim();
+      const classVal = document.getElementById('reg-class').value.trim();
+
+      if (!nameVal || !classVal) return;
+
+      currentStudent.name = nameVal;
+      currentStudent.studentClass = classVal;
+
+      // Update HUD & Character display
+      const hero = heroes[currentStudent.heroIdx];
+      document.getElementById('hud-player-name').innerText = currentStudent.name;
+      document.getElementById('hud-player-class').innerText = currentStudent.studentClass;
+      document.getElementById('avatar-icon-hud').innerText = hero.icon;
+      document.getElementById('player-character').innerText = hero.icon;
+      document.getElementById('player-hero-name').innerText = hero.name;
+
+      // Switch views
+      document.getElementById('view-registration').classList.add('hidden');
+      document.getElementById('view-gameplay').classList.remove('hidden');
+
+      initGame();
+    }
+
+    function initGame() {
+      loadCategory(0);
+      updateHUD();
+    }
+
+    function loadCategory(idx) {
+      currentCategoryIdx = idx;
+      document.getElementById('category-name').innerText = vocabularyData[idx].name;
+      generateNextQuestion();
+    }
+
+    function generateNextQuestion() {
+      const category = vocabularyData[currentCategoryIdx];
+      const items = category.items;
+      
+      const item = items[Math.floor(Math.random() * items.length)];
+      const isArToMs = Math.random() < 0.5;
+
+      let promptText, questionText, correctAnswerText, arabicTextForTTS;
+
+      if (isArToMs) {
+        promptText = "Apakah maksud bagi perkataan ini?";
+        questionText = item.ar;
+        correctAnswerText = item.ms;
+        arabicTextForTTS = item.ar;
+        document.getElementById('question-direction').innerText = "Arab ➔ Melayu";
+        document.getElementById('question-display').className = "font-arabic text-3xl md:text-5xl font-black text-amber-300 drop-shadow-lg leading-relaxed";
+        document.getElementById('tts-btn').style.display = "flex";
+      } else {
+        promptText = "Pilih perkataan Bahasa Arab yang betul:";
+        questionText = item.ms;
+        correctAnswerText = item.ar;
+        arabicTextForTTS = item.ar;
+        document.getElementById('question-direction').innerText = "Melayu ➔ Arab";
+        document.getElementById('question-display').className = "text-xl md:text-3xl font-black text-amber-300 drop-shadow-lg leading-relaxed";
+        document.getElementById('tts-btn').style.display = "none";
+      }
+
+      currentQuestion = {
+        prompt: promptText,
+        question: questionText,
+        correct: correctAnswerText,
+        arabicText: arabicTextForTTS,
+        isArToMs: isArToMs
+      };
+
+      document.getElementById('prompt-instruction').innerText = promptText;
+      document.getElementById('question-display').innerText = questionText;
+
+      let distractors = items
+        .filter(i => (isArToMs ? i.ms : i.ar) !== correctAnswerText)
+        .map(i => isArToMs ? i.ms : i.ar);
+      
+      distractors.sort(() => Math.random() - 0.5);
+      
+      let selectedOptions = [correctAnswerText, distractors[0], distractors[1]];
+      selectedOptions = selectedOptions.filter(Boolean);
+      selectedOptions.sort(() => Math.random() - 0.5);
+
+      const grid = document.getElementById('options-grid');
+      grid.innerHTML = '';
+
+      selectedOptions.forEach((optText) => {
+        const btn = document.createElement('button');
+        btn.onclick = () => handleAnswer(optText, correctAnswerText, btn);
+        btn.className = `option-btn rpg-card bg-slate-900/90 hover:bg-slate-800 text-white p-3.5 rounded-2xl border-2 border-amber-500/60 flex items-center justify-center font-bold text-base md:text-lg shadow-lg cursor-pointer ${
+          !isArToMs ? 'font-arabic text-xl md:text-2xl text-amber-300' : 'text-slate-100'
+        }`;
+        btn.innerText = optText;
+        grid.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selected, correct, btnElement) {
+      player.totalQuestions++;
+      const isCorrect = (selected === correct);
+      const playerChar = document.getElementById('player-character');
+      const enemyChar = document.getElementById('enemy-character');
+
+      if (isCorrect) {
+        soundCorrect();
+        triggerConfetti();
+
+        playerChar.classList.add('animate-attack');
+        enemyChar.classList.add('animate-hurt');
+        setTimeout(() => {
+          playerChar.classList.remove('animate-attack');
+          enemyChar.classList.remove('animate-hurt');
+        }, 500);
+
+        player.streak++;
+        player.totalCorrect++;
+        player.coins += 10;
+        const gainXp = 35 + (player.streak * 5);
+        addXp(gainXp);
+
+        spawnFloatingText(`+${gainXp} XP`, 'text-yellow-400 font-black', btnElement);
+        showSpeechBubble('player-status-bubble', 'Serangan Tepat! ⚔️');
+
+      } else {
+        soundWrong();
+        triggerScreenShake();
+
+        enemyChar.classList.add('animate-attack');
+        playerChar.classList.add('animate-hurt');
+        setTimeout(() => {
+          enemyChar.classList.remove('animate-attack');
+          playerChar.classList.remove('animate-hurt');
+        }, 500);
+
+        player.streak = 0;
+        const damage = 15;
+        player.hp = Math.max(0, player.hp - damage);
+
+        spawnFloatingText(`-${damage} HP`, 'text-red-500 font-black', btnElement);
+        showSpeechBubble('enemy-status-bubble', 'Terkena Serangan! 💥');
+
+        if (player.hp <= 0) {
+          saveStudentRecord();
+          setTimeout(showGameOver, 600);
+          return;
+        }
+      }
+
+      updateHUD();
+
+      setTimeout(() => {
+        generateNextQuestion();
+      }, 900);
+    }
+
+    function addXp(amount) {
+      player.xp += amount;
+      if (player.xp >= player.nextXp) {
+        player.level++;
+        player.xp -= player.nextXp;
+        player.nextXp = Math.floor(player.nextXp * 1.35);
+        player.hp = player.maxHp;
+        soundLevelUp();
+        showSpeechBubble('player-status-bubble', '🎉 NAIK LEVEL! HP PULIH!');
+      }
+    }
+
+    function updateHUD() {
+      const hpPct = Math.max(0, (player.hp / player.maxHp) * 100);
+      document.getElementById('hp-bar').style.width = `${hpPct}%`;
+      document.getElementById('hp-text').innerText = `${player.hp}/${player.maxHp}`;
+
+      const xpPct = Math.min(100, (player.xp / player.nextXp) * 100);
+      document.getElementById('xp-bar').style.width = `${xpPct}%`;
+      document.getElementById('xp-text').innerText = `${player.xp}/${player.nextXp}`;
+
+      document.getElementById('level-badge').innerText = `LVL ${player.level}`;
+      document.getElementById('coin-count').innerText = player.coins;
+      document.getElementById('streak-count').innerText = `${player.streak}x`;
+    }
+
+    function showSpeechBubble(elementId, msg) {
+      const bubble = document.getElementById(elementId);
+      bubble.innerText = msg;
+      bubble.classList.remove('hidden');
+      setTimeout(() => {
+        bubble.classList.add('hidden');
+      }, 1400);
+    }
+
+    function spawnFloatingText(text, colorClass, sourceEl) {
+      const zone = document.getElementById('damage-float-zone');
+      const rect = sourceEl ? sourceEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2 };
+
+      const el = document.createElement('div');
+      el.className = `absolute floating-num text-2xl md:text-3xl drop-shadow-md ${colorClass}`;
+      el.innerText = text;
+      el.style.left = `${rect.left + rect.width / 4}px`;
+      el.style.top = `${rect.top}px`;
+
+      zone.appendChild(el);
+      setTimeout(() => el.remove(), 1200);
+    }
+
+    function triggerScreenShake() {
+      const container = document.getElementById('app-root');
+      container.classList.add('animate-shake');
+      setTimeout(() => container.classList.remove('animate-shake'), 400);
+    }
+
+    function triggerConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6'];
+
+      for (let i = 0; i < 40; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.7) * 14,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 8 + 4,
+          life: 1
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+        particles.forEach(p => {
+          if (p.life > 0) {
+            alive = true;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.35;
+            p.life -= 0.02;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+          }
+        });
+        if (alive) requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    function saveStudentRecord() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+
+      const percentage = player.totalQuestions > 0 ? Math.round((player.totalCorrect / player.totalQuestions) * 100) : 0;
+
+      const record = {
+        id: Date.now(),
+        name: currentStudent.name || 'Murid Tanpa Nama',
+        studentClass: currentStudent.studentClass || 'N/A',
+        timestamp: dateStr,
+        level: player.level,
+        xp: player.xp,
+        correct: player.totalCorrect,
+        total: player.totalQuestions,
+        percentage: percentage
+      };
+
+      try {
+        let records = JSON.parse(localStorage.getItem('wira_arabic_records') || '[]');
+        records.unshift(record);
+        localStorage.setItem('wira_arabic_records', JSON.stringify(records));
+      } catch (e) {
+        console.log("Could not save to localStorage");
+      }
+    }
+
+    function getStoredRecords() {
+      try {
+        return JSON.parse(localStorage.getItem('wira_arabic_records') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function openTeacherAuthModal() {
+      soundClick();
+      document.getElementById('pass-error-msg').classList.add('hidden');
+      document.getElementById('teacher-pass-input').value = '';
+      document.getElementById('teacher-auth-modal').classList.remove('hidden');
+    }
+
+    function closeTeacherAuthModal() {
+      soundClick();
+      document.getElementById('teacher-auth-modal').classList.add('hidden');
+    }
+
+    function verifyTeacherPass(e) {
+      e.preventDefault();
+      soundClick();
+      const pass = document.getElementById('teacher-pass-input').value.trim();
+      if (pass.toLowerCase() === 'admin' || pass.toLowerCase() === 'guru' || pass === '1234') {
+        closeTeacherAuthModal();
+        openTeacherDashboard();
+      } else {
+        document.getElementById('pass-error-msg').classList.remove('hidden');
+      }
+    }
+
+    function openTeacherDashboard() {
+      renderRecordsTable();
+      document.getElementById('teacher-dashboard-modal').classList.remove('hidden');
+    }
+
+    function closeTeacherDashboard() {
+      soundClick();
+      document.getElementById('teacher-dashboard-modal').classList.add('hidden');
+    }
+
+    function renderRecordsTable() {
+      const records = getStoredRecords();
+      document.getElementById('record-count-badge').innerText = records.length;
+      const tbody = document.getElementById('student-records-tbody');
+      tbody.innerHTML = '';
+
+      if (records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-slate-400">Tiada rekod permainan disimpan lagi.</td></tr>`;
+        return;
+      }
+
+      records.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/50 transition';
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-amber-400">${idx + 1}</td>
+          <td class="p-3 font-bold">${r.name}</td>
+          <td class="p-3 text-slate-300">${r.studentClass}</td>
+          <td class="p-3 text-slate-400 text-[11px]">${r.timestamp}</td>
+          <td class="p-3"><span class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">LVL ${r.level}</span> <span class="text-slate-400 text-[10px]">(${r.xp} XP)</span></td>
+          <td class="p-3 text-center font-bold text-emerald-400">${r.correct} / ${r.total}</td>
+          <td class="p-3 text-right font-black ${r.percentage >= 60 ? 'text-emerald-400' : 'text-rose-400'}">${r.percentage}%</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function printStudentRecords() {
+      soundClick();
+      const records = getStoredRecords();
+      const printTbody = document.getElementById('printable-records-tbody');
+      printTbody.innerHTML = '';
+
+      document.getElementById('print-date-header').innerText = `Tarikh Cetakan: ${new Date().toLocaleDateString('ms-MY')}`;
+
+      if (records.length === 0) {
+        printTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:15px;">Tiada rekod disimpan.</td></tr>`;
+      } else {
+        records.forEach((r, idx) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="border: 1px solid #ddd; padding: 6px;">${idx + 1}</td>
+            <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold;">${r.name}</td>
+            <td style="border: 1px solid #ddd; padding: 6px;">${r.studentClass}</td>
+            <td style="border: 1px solid #ddd; padding: 6px;">${r.timestamp}</td>
+            <td style="border: 1px solid #ddd; padding: 6px;">LVL ${r.level} (${r.xp} XP)</td>
+            <td style="border: 1px solid #ddd; padding: 6px;">${r.correct} / ${r.total}</td>
+            <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-weight: bold;">${r.percentage}%</td>
+          `;
+          printTbody.appendChild(tr);
+        });
+      }
+
+      window.print();
+    }
+
+    function exportCSV() {
+      soundClick();
+      const records = getStoredRecords();
+      if (records.length === 0) {
+        alert("Tiada rekod untuk di-export.");
+        return;
+      }
+
+      let csv = "No,Nama Murid,Kelas,Tarikh Masa,Level,XP,Jumlah Betul,Jumlah Soalan,Peratusan\n";
+      records.forEach((r, idx) => {
+        csv += `"${idx + 1}","${r.name}","${r.studentClass}","${r.timestamp}","${r.level}","${r.xp}","${r.correct}","${r.total}","${r.percentage}%"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Rekod_Murid_Wira_Mufradat_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function clearAllRecords() {
+      soundClick();
+      if (confirm("Adakah anda pasti mahu memadam SEMUA rekod murid? Tindakan ini tidak boleh dibatalkan.")) {
+        localStorage.removeItem('wira_arabic_records');
+        renderRecordsTable();
+      }
+    }
+
+    // Modal view helpers
+    function openHeroModal() {
+      soundClick();
+      const list = document.getElementById('hero-list');
+      list.innerHTML = '';
+      heroes.forEach((hero, idx) => {
+        const btn = document.createElement('button');
+        btn.onclick = () => {
+          currentStudent.heroIdx = idx;
+          document.getElementById('avatar-icon-hud').innerText = hero.icon;
+          document.getElementById('player-character').innerText = hero.icon;
+          document.getElementById('player-hero-name').innerText = hero.name;
+          closeHeroModal();
+        };
+        btn.className = `p-3 rounded-2xl border-2 flex flex-col items-center justify-center gap-1 transition ${
+          idx === currentStudent.heroIdx ? 'bg-amber-500 border-white text-slate-950 font-black' : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
+        }`;
+        btn.innerHTML = `<span class="text-3xl">${hero.icon}</span><span class="text-xs font-bold">${hero.name}</span>`;
+        list.appendChild(btn);
+      });
+      document.getElementById('hero-modal').classList.remove('hidden');
+    }
+
+    function closeHeroModal() {
+      soundClick();
+      document.getElementById('hero-modal').classList.add('hidden');
+    }
+
+    function openCategoryModal() {
+      soundClick();
+      const list = document.getElementById('category-list');
+      list.innerHTML = '';
+
+      vocabularyData.forEach((cat, idx) => {
+        const item = document.createElement('button');
+        item.onclick = () => {
+          loadCategory(idx);
+          closeCategoryModal();
+        };
+        item.className = `w-full text-left p-3.5 rounded-xl font-bold border transition flex justify-between items-center ${
+          idx === currentCategoryIdx ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-800 text-white hover:bg-slate-700 border-slate-700'
+        }`;
+        item.innerHTML = `<span>${cat.name}</span> <i class="fa-solid fa-chevron-right"></i>`;
+        list.appendChild(item);
+      });
+
+      document.getElementById('category-modal').classList.remove('hidden');
+    }
+
+    function closeCategoryModal() {
+      soundClick();
+      document.getElementById('category-modal').classList.add('hidden');
+    }
+
+    function showGameOver() {
+      document.getElementById('res-student-name').innerText = currentStudent.name || 'Murid';
+      document.getElementById('res-level').innerText = `LVL ${player.level}`;
+      document.getElementById('res-xp').innerText = `${player.xp} XP`;
+      document.getElementById('res-score').innerText = `${player.totalCorrect} / ${player.totalQuestions}`;
+      document.getElementById('result-modal').classList.remove('hidden');
+    }
+
+    function restartGame() {
+      soundClick();
+      player = { hp: 100, maxHp: 100, xp: 0, nextXp: 100, level: 1, coins: 0, streak: 0, totalCorrect: 0, totalQuestions: 0 };
+      document.getElementById('result-modal').classList.add('hidden');
+      initGame();
+    }
+
+    window.onload = function() {
+      renderHeroSelectionForm();
+    };
+  </script>
+</body>
+</html>
